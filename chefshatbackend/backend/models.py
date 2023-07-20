@@ -1,10 +1,20 @@
 from django.db import models
 
+class FileField(models.FileField):
+    def value_to_string(self, obj):
+        return obj.file.url
+
 def defaultProfile():
     if User.sex == 'MALE':
         return 'https://i.pinimg.com/originals/ba/be/1f/babe1f8eddf93fbcb3d1802bc1b65fe4.png'
     elif User.sex == 'FEMALE':
         return 'https://i.pinimg.com/originals/be/84/e8/be84e8c7ce61aaec1426b217d2b0ed3b.png'
+    
+def defaultDishImage():
+    return 'https://www.istockphoto.com/vector/hand-drawn-vector-seamless-pattern-with-sketch-dairy-products-on-a-blackboard-gm1224636004-360176253?phrase=black%20and%20white%20dish'
+
+def defaultIngredientImage():
+    return 'ingredientImages/default.png'
     
 class User(models.Model):
     SEX_CHOICES = (
@@ -13,7 +23,7 @@ class User(models.Model):
     )
 
     username = models.CharField(max_length=255)
-    profilePhoto = models.ImageField(upload_to='backend/profilePhotos',default=defaultProfile, null=True, blank=True)
+    profilePhoto = FileField(upload_to='userProfilePhotos/',default=defaultProfile, null=True, blank=True)
     sex = models.CharField(max_length=10, choices=SEX_CHOICES)
     mobileNumber = models.CharField(max_length=10)
     emailAddress = models.EmailField(max_length=100)
@@ -73,13 +83,13 @@ class Dish(models.Model):
     )
 
     dishName = models.CharField(max_length = 200)
-    course = models.CharField(max_length= 200, choices = COURSE_CHOICES)
-    cuisine = models.CharField(max_length= 200, choices = CUISINE_CHOICES)
+    dishCourse = models.CharField(max_length= 200, choices = COURSE_CHOICES)
+    dishCuisine = models.CharField(max_length= 200, choices = CUISINE_CHOICES)
     dishCategoryDietary = models.CharField(max_length= 200, choices = DIETARY_CHOICES)
     dishCategoryAllergen = models.CharField(max_length= 200, choices = ALLERGEN_CHOICES)
     dishCategorySpicenessLevel = models.CharField(max_length= 200, choices = SPICENESS_LEVEL_CHOICES)
     dishCategorySeason = models.CharField(max_length= 200, choices = SEASON_CHOICES)
-    dishImage = models.FileField(max_length = 200, default="https://www.istockphoto.com/vector/hand-drawn-vector-seamless-pattern-with-sketch-dairy-products-on-a-blackboard-gm1224636004-360176253?phrase=black%20and%20white%20dish")
+    dishImage = FileField(upload_to='dishImages/',default=defaultDishImage, null=True, blank=True)
     dishDescription = models.CharField(max_length = 10000)
     dishRating = models.DecimalField(max_digits=3, decimal_places=2)
     dishTotalTime = models.CharField(max_length =20)
@@ -134,12 +144,8 @@ class Ingredient(models.Model):
         ("breverages", "Breverages"),
     )
 
-    INGREDIENT_DETAILS_CHOICES = (
-        ("SELECT", "SELECT"),
-    )
-
     ingredientName = models.CharField(max_length = 200)
-    ingredientImage = models.CharField(max_length = 200)
+    ingredientImage = FileField(upload_to='ingredientImages/',default=defaultIngredientImage, null=True, blank=True)
     ingredientCategory = models.CharField(max_length =50, choices = CATEGORY_CHOICES)
     ingredientPantryEssentials = models.BooleanField(default = False)
 

@@ -30,7 +30,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '127.0.0.1',
     '192.168.0.199', 
-    '192.168.107.104', # Xiaomi 11i
+    '192.168.68.105', # Xiaomi 11i
     '192.168.43.104' # Vedant Poco F1
     ]
 
@@ -136,6 +136,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+ROOT_URLCONF = "chefshatbackend.urls"
 MEDIA_URL = '/media/'
 # Path where media is stored
-MEDIA_ROOT = os.path.join(BASE_DIR, 'backend/profilePhotos')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'backend/images/')

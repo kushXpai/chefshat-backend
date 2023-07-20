@@ -2,6 +2,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphql import GraphQLError
 from .models import User, Dish
+import datetime
 
 class UserType(DjangoObjectType):
     class Meta:
@@ -36,6 +37,8 @@ class Query(graphene.ObjectType):
     displayDish = graphene.List(DishType)
     displayDishById = graphene.Field(DishType, id=graphene.ID(required=True))
     displayDishByCuisine = graphene.List(DishType, cuisine=graphene.String(required=True))
+    displayLastAddedDish = graphene.Field(DishType)
+    displayDishesAddedLastWeek = graphene.List(DishType)
 
     def resolve_displayDish(self, info):
         return Dish.objects.all()
@@ -48,9 +51,20 @@ class Query(graphene.ObjectType):
         
     def resolve_displayDishByCuisine(self, info, cuisine):
         try:
-            return Dish.objects.filter(cuisine=cuisine)
+            return Dish.objects.filter(cuisine=cuisine).order_by('-dishLastUpdate')
         except Dish.DoesNotExist:
             return None
+        
+    def resolve_displayLastAddedDish(self, info):
+        try:
+            return Dish.objects.latest('id')
+        except Dish.DoesNotExist:
+            return None
+    
+    def resolve_displayDishesAddedLastWeek(self, info):
+        one_week_ago = datetime.datetime.now() - datetime.timedelta(weeks=1)
+        
+        return Dish.objects.filter(dishLastUpdate__gte=one_week_ago).order_by('-dishLastUpdate')
         
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType)
