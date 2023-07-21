@@ -1,0 +1,129 @@
+# Welcome to GraphiQL
+#
+# GraphiQL is an in-browser tool for writing, validating, and
+# testing GraphQL queries.
+#
+# Type queries into this side of the screen, and you will see intelligent
+# typeaheads aware of the current GraphQL type schema and live syntax and
+# validation errors highlighted within the text.
+#
+# GraphQL queries typically start with a "{" character. Lines that start
+# with a # are ignored.
+#
+# An example GraphQL query might look like:
+#
+#     {
+#       field(arg: "value") {
+#         subField
+#       }
+#     }
+#
+# Keyboard shortcuts:
+#
+#   Prettify query:  Shift-Ctrl-P (or press the prettify button)
+#
+#  Merge fragments:  Shift-Ctrl-M (or press the merge button)
+#
+#        Run Query:  Ctrl-Enter (or press the play button)
+#
+#    Auto Complete:  Ctrl-Space (or just start typing)
+#
+
+# query{
+#   displayDish{
+#     id
+#     dishName
+#     dishVisits
+#   }
+# }
+
+# query{
+#   displayDishesTrending{
+#     id
+#     dishName
+#     dishImage
+#     dishVisits
+#   }
+# }
+
+# mutation{
+#   increaseDishvisits(id: 3) {
+#     dish {
+#       id
+#       dishVisits
+#     }
+#   }
+# }
+
+# query {
+#   displayLastAddedDish {
+#     id
+#     dishName
+#   }
+# }
+
+# query{
+#   displayUser{
+#     id
+#     username
+#     profilePhoto
+#   }
+# }
+
+# query{
+#   displayIngredient{
+#     id
+#     ingredientName
+#     ingredientImage
+#     ingredientCategory
+#   }
+# }
+
+# query{
+#   displayIngredientById(id: 17){
+#     id
+#     ingredientName
+#     ingredientCategory
+#   }
+# }
+
+# query{
+#   displayIngredientByCategory(ingredientCategory: "POULTRY"){
+#     id
+#     ingredientName
+#     ingredientCategory
+#   }
+# }
+
+# query{
+#   displayDishIngredient{
+#     dishId{
+#       id
+#     }
+#     ingredientId{
+#       id
+#     }
+#     dishIngredientQuantity
+#     dishIngredientQuantityUnit
+#   }
+# }
+
+
+# query {
+#   displayDishById(id: 1) {
+#     id
+#     dishName
+
+#     ingredients(dishId: 1) {
+#       dishIngredientQuantity
+#       dishIngredientQuantityUnit
+#       ingredientId {
+#         id
+#         ingredientName
+#         ingredientImage
+#       }
+#     }
+#   }
+# }
+
+

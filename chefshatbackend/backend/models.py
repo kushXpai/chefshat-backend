@@ -83,6 +83,7 @@ class Dish(models.Model):
     )
 
     dishName = models.CharField(max_length = 200)
+    dishVisits = models.IntegerField(default=0)
     dishCourse = models.CharField(max_length= 200, choices = COURSE_CHOICES)
     dishCuisine = models.CharField(max_length= 200, choices = CUISINE_CHOICES)
     dishCategoryDietary = models.CharField(max_length= 200, choices = DIETARY_CHOICES)
@@ -111,37 +112,37 @@ class Dish(models.Model):
 class Ingredient(models.Model):
 
     CATEGORY_CHOICES = (
-        ("vegetables", "Vegetables"),
-        ("mushrooms", "Mushrooms"),
-        ("fruits", "Fruits"),
-        ("berries", "Berries"),
-        ("nutsseeds", "Nuts N Seeds"),
-        ("cheeses", "Cheeses"),
-        ("dairy", "Dairy"),
-        ("dairyfree", "Dairy Free"),
-        ("eggs", "Eggs"),
-        ("pasta", "Pasta"),
-        ("meat", "Meat"),
-        ("meatsubstitutes", "Meat Substitutes"),
-        ("poulty", "Poulty"),
-        ("fish", "Fish"),
-        ("shellfish", "Shellfish"),
-        ("herbsspices", "Herbs N Spices"),
-        ("sugarsweetners", "Sugar N Sweetners"),
-        ("seasoning", "Seasonings"),
-        ("baking", "Baking"),
-        ("grains", "Grains"),
-        ("legumes", "Legumes"),
-        ("breads", "Breads"),
-        ("oilsfats", "Oils N Fats"),
-        ("dressingsvinegars", "Dressings N Vinegars"),
-        ("condiments", "Condiments"),
-        ("canned", "Canned Foods"),
-        ("saucesspreadsdips", "Sauces, Spreads N Dips"),
-        ("stewsstocks", "Stews N Stocks"),
-        ("dessertssweets", "Desserts N Sweets"),
-        ("alcohol", "Alcohol"),
-        ("breverages", "Breverages"),
+        ("VEGETABLES", "VEGETABLES"),
+        ("MUSHROOMS", "MUSHROOMS"),
+        ("FRUITS", "FRUITS"),
+        ("BERRIES", "BERRIES"),
+        ("NUTSNSEEDS", "NUTS N SEEDS"),
+        ("CHEESES", "CHEESES"),
+        ("DAIRY", "DAIRY"),
+        ("DAIRYFREE", "DAIRY FREE"),
+        ("EGGS", "EGGS"),
+        ("PASTA", "PASTA"),
+        ("MEAT", "MEAT"),
+        ("MEATSUBSTITUTES", "MEAT SUBSTITUTES"),
+        ("POULTRY", "POULTRY"),
+        ("FISH", "FISH"),
+        ("SHELLFISH", "SHELLFISH"),
+        ("HERBSNSPICES", "HERBS N SPICES"),
+        ("SUGARSNSWEETNERS", "SUGARS N SWEETNERS"),
+        ("SEASONINGS", "SEASONINGS"),
+        ("BAKING", "BAKING"),
+        ("GRAINS", "GRAINS"),
+        ("LEGUMES", "LEGUMES"),
+        ("BREADS", "BREADS"),
+        ("OILSNFATS", "OILS N FATS"),
+        ("DRESSINGSNVINEGARS", "DRESSINGS N VINEGARS"),
+        ("CONDIMENTS", "CONDIMENTS"),
+        ("CANNED", "CANNED FOODS"),
+        ("SAUCESNSPREADSNDIPS", "SAUCES, SPREADS N DIPS"),
+        ("STEWSNSTOCKS", "STEWS N STOCKS"),
+        ("DESSERTSNSWEETS", "DESSERTS N SWEETS"),
+        ("ALCOHOL", "ALCOHOL"),
+        ("BREVERAGES", "BREVERAGES"),
     )
 
     ingredientName = models.CharField(max_length = 200)
@@ -151,14 +152,14 @@ class Ingredient(models.Model):
 
 
     def __str__(self) -> str:
-        return f"{self.id} : {self.ingredientName}"
+        return self.ingredientName
     
 class DishIngredient(models.Model):
 
     dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
     ingredientId = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     dishIngredientQuantity = models.IntegerField()
-    dishIngredientQuantityUnit = models.CharField(max_length = 200)  
+    dishIngredientQuantityUnit = models.CharField(max_length = 200, null=True)  
 
     def __str__(self) -> str:
         return f"{self.dishId} : {self.ingredientId}"
