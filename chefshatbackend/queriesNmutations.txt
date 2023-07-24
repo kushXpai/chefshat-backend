@@ -29,6 +29,12 @@
 #    Auto Complete:  Ctrl-Space (or just start typing)
 #
 
+# query ($mobileNumber: String!) {
+#   displayUserByMobileNumber(mobileNumber: $mobileNumber) {
+#     id
+#   }
+# }
+
 # query{
 #   displayDish{
 #     id
@@ -113,8 +119,9 @@
 #   displayDishById(id: 1) {
 #     id
 #     dishName
-
+    
 #     ingredients(dishId: 1) {
+#       id
 #       dishIngredientQuantity
 #       dishIngredientQuantityUnit
 #       ingredientId {
@@ -125,5 +132,3 @@
 #     }
 #   }
 # }
-
-
