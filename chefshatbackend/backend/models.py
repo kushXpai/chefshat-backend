@@ -84,8 +84,8 @@ class Dish(models.Model):
 
     dishName = models.CharField(max_length = 200)
     dishVisits = models.IntegerField(default=0)
-    dishCourse = models.CharField(max_length= 200, choices = COURSE_CHOICES)
-    dishCuisine = models.CharField(max_length= 200, choices = CUISINE_CHOICES)
+    dishCategoryCourse = models.CharField(max_length= 200, choices = COURSE_CHOICES)
+    dishCategoryCuisine = models.CharField(max_length= 200, choices = CUISINE_CHOICES)
     dishCategoryDietary = models.CharField(max_length= 200, choices = DIETARY_CHOICES)
     dishCategoryAllergen = models.CharField(max_length= 200, choices = ALLERGEN_CHOICES)
     dishCategorySpicenessLevel = models.CharField(max_length= 200, choices = SPICENESS_LEVEL_CHOICES)
