@@ -163,3 +163,12 @@ class DishIngredient(models.Model):
 
     def __str__(self) -> str:
         return f"{self.dishId} : {self.ingredientId}"
+
+class UserSavedRecipes(models.Model):
+
+    userId = models.ForeignKey(User, on_delete=models.CASCADE)
+    dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
+    recipeSaved = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.userId} : {self.dishId}"
