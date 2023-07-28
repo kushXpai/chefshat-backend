@@ -138,6 +138,22 @@ class Query(graphene.ObjectType):
         except UserSavedRecipes.DoesNotExist:
             raise GraphQLError(f"User with ID {userId} does not have any saved recipes.")
         
+    
+
+
+    # Recipe Searching
+    searchDishesByIngredients = graphene.List(DishType, ingredients=graphene.List(graphene.String))
+
+    def resolve_searchDishesByIngredients(self, info, ingredients):
+        ingredient_objects = Ingredient.objects.filter(ingredientName__in=ingredients)
+
+        dishes = Dish.objects.filter(dishingredient__ingredientId__in=ingredient_objects).distinct()
+
+        for ingredient in ingredients:
+            dishes = dishes.filter(dishingredient__ingredientId__ingredientName=ingredient)
+
+        return dishes
+        
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType)
 

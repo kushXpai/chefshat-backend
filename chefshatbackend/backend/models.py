@@ -119,11 +119,11 @@ class Ingredient(models.Model):
         ("NUTSNSEEDS", "NUTS N SEEDS"),
         ("CHEESES", "CHEESES"),
         ("DAIRY", "DAIRY"),
-        ("DAIRYFREE", "DAIRY FREE"),
+        ("DAIRYFREE", "DAIRY FREE"), #
         ("EGGS", "EGGS"),
         ("PASTA", "PASTA"),
         ("MEAT", "MEAT"),
-        ("MEATSUBSTITUTES", "MEAT SUBSTITUTES"),
+        ("MEATSUBSTITUTES", "MEAT SUBSTITUTES"), #
         ("POULTRY", "POULTRY"),
         ("FISH", "FISH"),
         ("SHELLFISH", "SHELLFISH"),
@@ -136,7 +136,7 @@ class Ingredient(models.Model):
         ("BREADS", "BREADS"),
         ("OILSNFATS", "OILS N FATS"),
         ("DRESSINGSNVINEGARS", "DRESSINGS N VINEGARS"),
-        ("CONDIMENTS", "CONDIMENTS"),
+        ("CONDIMENTS", "CONDIMENTS"), #
         ("CANNED", "CANNED FOODS"),
         ("SAUCESNSPREADSNDIPS", "SAUCES, SPREADS N DIPS"),
         ("STEWSNSTOCKS", "STEWS N STOCKS"),
