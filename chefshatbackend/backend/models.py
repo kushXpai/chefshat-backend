@@ -163,12 +163,35 @@ class DishIngredient(models.Model):
 
     def __str__(self) -> str:
         return f"{self.dishId} : {self.ingredientId}"
+    
+class DishStep(models.Model):
 
-class UserSavedRecipes(models.Model):
+    dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
+    dishStepDescription = models.CharField(max_length = 400, null=True)  
+
+    def __str__(self) -> str:
+        return f"{self.dishId}"
+
+class UserSavedRecipe(models.Model):
 
     userId = models.ForeignKey(User, on_delete=models.CASCADE)
     dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
     recipeSaved = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.userId} : {self.dishId}"
+    
+class UserRatedRecipe(models.Model):
+
+    RATING_CHOICES = (
+        ("THUMBSUP", "THUMBS UP"),
+        ("THUMBSDOWN", "THUMBS DOWN"),
+    )
+
+    userId = models.ForeignKey(User, on_delete=models.CASCADE)
+    dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
+    rating = models.CharField(max_length=10, choices=RATING_CHOICES)
+    recipeRated = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f"{self.userId} : {self.dishId}"

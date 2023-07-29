@@ -78,9 +78,9 @@
 
 # query{
 #   displayIngredient{
-#     id
-#     ingredientName
-#     ingredientImage
+#     # id
+#     # ingredientName
+#     # ingredientImage
 #     ingredientCategory
 #   }
 # }
@@ -94,7 +94,7 @@
 # }
 
 # query{
-#   displayIngredientByCategory(ingredientCategory: "POULTRY"){
+#   displayIngredientByCategory(ingredientCategory: "SAUCESNSPREADSNDIPS"){
 #     id
 #     ingredientName
 #     ingredientCategory
@@ -132,3 +132,96 @@
 #     }
 #   }
 # }
+
+
+
+# query{
+#   displayDish{
+#     id
+#     dishName
+#     dishLastUpdate
+#   }
+# }
+
+# query{
+#   displayUserByMobileNumber(mobileNumber: "8355958693"){
+#     username,
+#     profilePhoto,
+#   }
+# }
+
+
+# query{
+#   displayDishByCuisine(dishCategoryCuisine: "indian"){
+#     id
+#     dishName
+#   }
+# }
+
+# query {
+#   displayUserSavedRecipes {
+#     id
+#     userId {
+#       id
+#       username
+#     }
+#     dishId {
+#       id
+#       dishName
+#     }
+#     recipeSaved
+#   }
+# }
+
+# query {
+#   displayUserSavedRecipes {
+#     id
+#   }
+# }
+
+
+# query {
+#   displayUserSavedRecipesById(userId: 1) {
+#     id
+#     userId {
+#       id
+#       username
+#     }
+#     dishId {
+#       id
+#       dishName
+#       dishImage
+#     }
+#     recipeSaved
+#   }
+# }
+
+
+# query SearchDishesByIngredients {
+#   searchDishesByIngredients(ingredients: ["Salt N Pepper", "Mustard"]) {
+#     id
+#     dishName
+#     dishVisits
+#     # dishCategoryCourse
+#     # dishCategoryCuisine
+#     # dishCategoryDietary
+#     # dishCategoryAllergen
+#     # dishCategorySpicenessLevel
+#     # dishCategorySeason
+#     # dishImage
+#     # dishDescription
+#     # dishRating
+#     # dishTotalTime
+#     # dishPreparationTime
+#     # dishCookingTime
+#     # dishCalories
+#     # dishProteins
+#     # dishFats
+#     # dishCarbohydrates
+#     # dishFibres
+#     # dishSugar
+#     # dishSodium
+#     dishLastUpdate
+#   }
+# }
+

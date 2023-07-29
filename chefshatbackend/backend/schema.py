@@ -1,7 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
 from graphql import GraphQLError
-from .models import User, Dish, Ingredient, DishIngredient, UserSavedRecipes
+from .models import User, Dish, Ingredient, DishIngredient, DishStep, UserSavedRecipe, UserRatedRecipe
 import datetime
 
 class UserType(DjangoObjectType):
@@ -19,6 +19,11 @@ class DishIngredientType(DjangoObjectType):
         model = DishIngredient
         fields = "__all__"
 
+class DishStepType(DjangoObjectType):
+    class Meta:
+        model = DishStep
+        fields = "__all__"
+
 class DishType(DjangoObjectType):
     class Meta:
         model = Dish
@@ -29,9 +34,14 @@ class DishType(DjangoObjectType):
     def resolve_ingredients(self, info, dishId):
         return DishIngredient.objects.filter(dishId=dishId)
     
-class UserSavedRecipesType(DjangoObjectType):
+class UserSavedRecipeType(DjangoObjectType):
     class Meta:
-        model = UserSavedRecipes
+        model = UserSavedRecipe
+        fields = "__all__"
+
+class UserRatedRecipeType(DjangoObjectType):
+    class Meta:
+        model = UserRatedRecipe
         fields = "__all__"
 
 class Query(graphene.ObjectType):
@@ -125,22 +135,48 @@ class Query(graphene.ObjectType):
         except DishIngredient.DoesNotExist:
             raise GraphQLError(f"Dish with ID {dishId} does not exist.")
         
-    # SAVED RECIPES
-    displayUserSavedRecipes = graphene.List(UserSavedRecipesType)
-    displayUserSavedRecipesById = graphene.List(UserSavedRecipesType, userId=graphene.ID(required=True))
+    # DISH STEP
+    displayDishStep = graphene.List(DishStepType)
+    displayDishStepById = graphene.List(DishStepType, dishId=graphene.ID(required=True))
 
-    def resolve_displayUserSavedRecipes(self, info):
-        return UserSavedRecipes.objects.all()
+    def resolve_displayDishStep(self, info):
+        return DishStep.objects.all()
     
-    def resolve_displayUserSavedRecipesById(self, info, userId):
+    def resolve_displayDishStepById(self, info, dishId):
         try:
-            return UserSavedRecipes.objects.filter(userId=userId).order_by('-recipeSaved')
-        except UserSavedRecipes.DoesNotExist:
+            return DishStep.objects.filter(dishId=dishId)
+        except DishStep.DoesNotExist:
+            raise GraphQLError(f"Dish with ID {dishId} does not exist.")
+
+        
+    # SAVED RECIPES
+    displayUserSavedRecipe = graphene.List(UserSavedRecipeType)
+    displayUserSavedRecipeById = graphene.List(UserSavedRecipeType, userId=graphene.ID(required=True))
+
+    def resolve_displayUserSavedRecipe(self, info):
+        return UserSavedRecipe.objects.all()
+    
+    def resolve_displayUserSavedRecipeById(self, info, userId):
+        try:
+            return UserSavedRecipe.objects.filter(userId=userId).order_by('-recipeSaved')
+        except UserSavedRecipe.DoesNotExist:
             raise GraphQLError(f"User with ID {userId} does not have any saved recipes.")
         
     
+    # RATED RECIPES
+    displayUserRatedRecipe = graphene.List(UserRatedRecipeType)
+    displayUserRatedRecipeById = graphene.List(UserRatedRecipeType, userId=graphene.ID(required=True))
 
-
+    def resolve_displayUserRatedRecipe(self, info):
+        return UserRatedRecipe.objects.all()
+    
+    def resolve_displayUserRatedRecipeById(self, info, userId):
+        try:
+            return UserRatedRecipe.objects.filter(userId=userId).order_by('-recipeRated')
+        except UserRatedRecipe.DoesNotExist:
+            raise GraphQLError(f"User with ID {userId} does not have any rated recipes.")
+        
+    
     # Recipe Searching
     searchDishesByIngredients = graphene.List(DishType, ingredients=graphene.List(graphene.String))
 
@@ -153,6 +189,7 @@ class Query(graphene.ObjectType):
             dishes = dishes.filter(dishingredient__ingredientId__ingredientName=ingredient)
 
         return dishes
+  
         
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType)
@@ -188,26 +225,26 @@ class IncreaseDishVisits(graphene.Mutation):
         except Dish.DoesNotExist:
             raise GraphQLError(f"Dish with ID {id} does not exist.")
         
-class AddRecipeToSavedRecipes(graphene.Mutation):
+class AddRecipeToSavedRecipe(graphene.Mutation):
     class Arguments:
         userId = graphene.ID(required=True)
         dishId = graphene.ID(required=True)
 
-    saved_recipe = graphene.Field(UserSavedRecipesType)
+    saved_recipe = graphene.Field(UserSavedRecipeType)
 
     def mutate(self, info, userId, dishId):
         try:
             user = User.objects.get(id=userId)
             dish = Dish.objects.get(id=dishId)
-            saved_recipe = UserSavedRecipes(userId=user, dishId=dish)
+            saved_recipe = UserSavedRecipe(userId=user, dishId=dish)
             saved_recipe.save()
-            return AddRecipeToSavedRecipes(saved_recipe=saved_recipe)
+            return AddRecipeToSavedRecipe(saved_recipe=saved_recipe)
         except User.DoesNotExist:
             raise GraphQLError(f"User with ID {userId} does not exist.")
         except Dish.DoesNotExist:
             raise GraphQLError(f"Dish with ID {dishId} does not exist.")
 
-class RemoveRecipeFromSavedRecipes(graphene.Mutation):
+class RemoveRecipeFromSavedRecipe(graphene.Mutation):
     class Arguments:
         userId = graphene.ID(required=True)
         dishId = graphene.ID(required=True)
@@ -216,11 +253,11 @@ class RemoveRecipeFromSavedRecipes(graphene.Mutation):
 
     def mutate(self, info, userId, dishId):
         try:
-            user_saved_recipe = UserSavedRecipes.objects.get(userId=userId, dishId=dishId)
+            user_saved_recipe = UserSavedRecipe.objects.get(userId=userId, dishId=dishId)
             user_saved_recipe.delete()
-            return RemoveRecipeFromSavedRecipes(deletedCount=1)
-        except UserSavedRecipes.DoesNotExist:
-            return RemoveRecipeFromSavedRecipes(deletedCount=0)
+            return RemoveRecipeFromSavedRecipe(deletedCount=1)
+        except UserSavedRecipe.DoesNotExist:
+            return RemoveRecipeFromSavedRecipe(deletedCount=0)
         
 
 class Mutation(graphene.ObjectType):
@@ -228,7 +265,7 @@ class Mutation(graphene.ObjectType):
 
     increase_dishVisits = IncreaseDishVisits.Field()
 
-    add_recipe_to_saved_recipes = AddRecipeToSavedRecipes.Field()
-    remove_recipe_from_saved_recipes = RemoveRecipeFromSavedRecipes.Field()
+    add_recipe_to_saved_recipes = AddRecipeToSavedRecipe.Field()
+    remove_recipe_from_saved_recipes = RemoveRecipeFromSavedRecipe.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
