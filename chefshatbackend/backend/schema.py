@@ -1,7 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
 from graphql import GraphQLError
-from .models import User, Dish, Ingredient, DishIngredient, DishStep, UserSavedRecipe, UserRatedRecipe
+from .models import User, Dish, Ingredient, DishIngredient, DishStep, UserSavedRecipe, UserRatedRecipe, UserTip, UserRecentlyViewed
 import datetime
 
 class UserType(DjangoObjectType):
@@ -42,6 +42,16 @@ class UserSavedRecipeType(DjangoObjectType):
 class UserRatedRecipeType(DjangoObjectType):
     class Meta:
         model = UserRatedRecipe
+        fields = "__all__"
+
+class UserTipType(DjangoObjectType):
+    class Meta:
+        model = UserTip
+        fields = "__all__"
+
+class UserRecentlyViewedType(DjangoObjectType):
+    class Meta:
+        model = UserRecentlyViewed
         fields = "__all__"
 
 class Query(graphene.ObjectType):
@@ -152,6 +162,7 @@ class Query(graphene.ObjectType):
     # SAVED RECIPES
     displayUserSavedRecipe = graphene.List(UserSavedRecipeType)
     displayUserSavedRecipeById = graphene.List(UserSavedRecipeType, userId=graphene.ID(required=True))
+    displayUserSavedRecipeByCourse = graphene.List(UserSavedRecipeType, userId=graphene.ID(required=True), userSavedRecipeCategory=graphene.String(required=True))
 
     def resolve_displayUserSavedRecipe(self, info):
         return UserSavedRecipe.objects.all()
@@ -161,6 +172,12 @@ class Query(graphene.ObjectType):
             return UserSavedRecipe.objects.filter(userId=userId).order_by('-recipeSaved')
         except UserSavedRecipe.DoesNotExist:
             raise GraphQLError(f"User with ID {userId} does not have any saved recipes.")
+        
+    def resolve_displayUserSavedRecipeByCourse(self, info, userId, userSavedRecipeCategory):
+        try:
+            return UserSavedRecipe.objects.filter(userSavedRecipeCategory=userSavedRecipeCategory).order_by('-recipeSaved')
+        except UserSavedRecipe.DoesNotExist:
+            raise GraphQLError(f"User with {userSavedRecipeCategory} does not have any saved recipes.")
         
     
     # RATED RECIPES
@@ -175,7 +192,19 @@ class Query(graphene.ObjectType):
             return UserRatedRecipe.objects.filter(userId=userId).order_by('-recipeRated')
         except UserRatedRecipe.DoesNotExist:
             raise GraphQLError(f"User with ID {userId} does not have any rated recipes.")
-        
+
+    # TIPS 
+    displayUserTip = graphene.List(UserTipType)
+    displayUserTipById = graphene.List(UserTipType, userId=graphene.ID(required=True))
+
+    def resolve_displayUserTip(self, info):
+        return UserTip.objects.all()
+    
+    def resolve_displayUserTipById(self, info, userId):
+        try:
+            return UserTip.objects.filter(userId=userId).order_by('-recipeTiped')
+        except UserTip.DoesNotExist:
+            raise GraphQLError(f"User with ID {userId} does not have any tip recipes.")
     
     # Recipe Searching
     searchDishesByIngredients = graphene.List(DishType, ingredients=graphene.List(graphene.String))
@@ -190,6 +219,14 @@ class Query(graphene.ObjectType):
 
         return dishes
   
+    # Recently Viewed
+    displayUserRecentlyViewed = graphene.List(UserRecentlyViewedType, userId=graphene.ID(required=True))
+
+    def resolve_displayUserRecentlyViewed(self, info, userId):
+        try:
+            return UserRecentlyViewed.objects.filter(userId=userId).order_by('-recipeViewedTime')
+        except UserRecentlyViewed.DoesNotExist:
+            raise GraphQLError(f"User with ID {userId} haven't seen any recipes.")
         
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType)
@@ -229,14 +266,15 @@ class AddRecipeToSavedRecipe(graphene.Mutation):
     class Arguments:
         userId = graphene.ID(required=True)
         dishId = graphene.ID(required=True)
+        userSavedRecipeCategory = graphene.String(required=True)
 
     saved_recipe = graphene.Field(UserSavedRecipeType)
 
-    def mutate(self, info, userId, dishId):
+    def mutate(self, info, userId, dishId, userSavedRecipeCategory):
         try:
             user = User.objects.get(id=userId)
             dish = Dish.objects.get(id=dishId)
-            saved_recipe = UserSavedRecipe(userId=user, dishId=dish)
+            saved_recipe = UserSavedRecipe(userId=user, dishId=dish, userSavedRecipeCategory=userSavedRecipeCategory)
             saved_recipe.save()
             return AddRecipeToSavedRecipe(saved_recipe=saved_recipe)
         except User.DoesNotExist:
@@ -258,7 +296,45 @@ class RemoveRecipeFromSavedRecipe(graphene.Mutation):
             return RemoveRecipeFromSavedRecipe(deletedCount=1)
         except UserSavedRecipe.DoesNotExist:
             return RemoveRecipeFromSavedRecipe(deletedCount=0)
-        
+
+from django.utils import timezone
+
+class AddRecipeToRecentlyViewed(graphene.Mutation):
+    class Arguments:
+        userId = graphene.ID(required=True)
+        dishId = graphene.ID(required=True)
+
+    recentlyViewed = graphene.Field(UserRecentlyViewedType)
+
+    def mutate(self, info, userId, dishId):
+        try:
+            user = User.objects.get(id=userId)
+            dish = Dish.objects.get(id=dishId)
+
+            existing_entry = UserRecentlyViewed.objects.filter(userId=user, dishId=dish).first()
+
+            if existing_entry:
+                existing_entry.recipeViewedTime = timezone.now()
+                existing_entry.save()
+                return AddRecipeToRecentlyViewed(recentlyViewed=existing_entry)
+
+            viewed_dishes_count = UserRecentlyViewed.objects.filter(userId=user).count()
+
+            if viewed_dishes_count >= 5:
+                oldest_entry = UserRecentlyViewed.objects.filter(userId=user).order_by('recipeViewedTime').first()
+                oldest_entry.dishId = dish
+                oldest_entry.recipeViewedTime = timezone.now()
+                oldest_entry.save()
+                return AddRecipeToRecentlyViewed(recentlyViewed=oldest_entry)
+            else:
+                recentlyViewed = UserRecentlyViewed(userId=user, dishId=dish, recipeViewedTime=timezone.now())
+                recentlyViewed.save()
+                return AddRecipeToRecentlyViewed(recentlyViewed=recentlyViewed)
+        except User.DoesNotExist:
+            raise GraphQLError(f"User with ID {userId} does not exist.")
+        except Dish.DoesNotExist:
+            raise GraphQLError(f"Dish with ID {dishId} does not exist.")
+
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
@@ -267,5 +343,7 @@ class Mutation(graphene.ObjectType):
 
     add_recipe_to_saved_recipes = AddRecipeToSavedRecipe.Field()
     remove_recipe_from_saved_recipes = RemoveRecipeFromSavedRecipe.Field()
+
+    add_recipe_to_recently_viewed = AddRecipeToRecentlyViewed.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

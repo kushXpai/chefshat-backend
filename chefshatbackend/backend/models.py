@@ -173,9 +173,17 @@ class DishStep(models.Model):
         return f"{self.dishId}"
 
 class UserSavedRecipe(models.Model):
+    COURSE_CHOICES = (
+        ("APPETIZERS", "APPETIZERS"),
+        ("ENTREE", "ENTREE"),
+        ("DESSERTS", "DESSERTS"),
+        ("SIDES", "SIDES"),
+        ("SNACKS", "SNACKS"),
+    )
 
     userId = models.ForeignKey(User, on_delete=models.CASCADE)
     dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
+    userSavedRecipeCategory = models.CharField(max_length= 200, choices = COURSE_CHOICES)
     recipeSaved = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
@@ -192,6 +200,25 @@ class UserRatedRecipe(models.Model):
     dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
     rating = models.CharField(max_length=10, choices=RATING_CHOICES)
     recipeRated = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.userId} : {self.dishId}"
+    
+class UserTip(models.Model):
+    userId = models.ForeignKey(User, on_delete=models.CASCADE)
+    dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
+    tipDescription = models.CharField(max_length=500)
+    userTipImage = FileField(upload_to='userTips/', null=True, blank=True)
+    recipeTiped = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.userId} : {self.dishId}"
+    
+class UserRecentlyViewed(models.Model):
+
+    userId = models.ForeignKey(User, on_delete=models.CASCADE)
+    dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
+    recipeViewedTime = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f"{self.userId} : {self.dishId}"
