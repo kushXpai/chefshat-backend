@@ -225,3 +225,21 @@
 #   }
 # }
 
+
+
+mutation {
+  addRecipeToRecentlyViewed(userId: 1, dishId: 1) {
+    recentlyViewed {
+      id
+      userId {
+        id
+        username
+      }
+      dishId {
+        id
+        dishName
+      }
+      recipeViewedTime
+    }
+  }
+}
