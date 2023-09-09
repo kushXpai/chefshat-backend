@@ -1,7 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
 from graphql import GraphQLError
-from .models import User, Dish, Ingredient, DishIngredient, DishStep, UserSavedRecipe, UserRatedRecipe, UserTip, UserRecentlyViewed
+from .models import User, Dish, Ingredient, DishIngredient, DishStep, UserSavedRecipe, UserRatedRecipe, UserTip, UserRecentlyViewed, UserPantry
 import datetime
 
 class UserType(DjangoObjectType):
@@ -47,6 +47,11 @@ class UserRatedRecipeType(DjangoObjectType):
 class UserTipType(DjangoObjectType):
     class Meta:
         model = UserTip
+        fields = "__all__"
+
+class UserPantryType(DjangoObjectType):
+    class Meta:
+        model = UserPantry
         fields = "__all__"
 
 class UserRecentlyViewedType(DjangoObjectType):
@@ -228,6 +233,21 @@ class Query(graphene.ObjectType):
         except UserRecentlyViewed.DoesNotExist:
             raise GraphQLError(f"User with ID {userId} haven't seen any recipes.")
         
+    # Pantry
+    displayuserPantry = graphene.List(UserPantryType)
+    displayuserPantryById = graphene.Field(UserPantryType, id=graphene.Int())
+    displayuserPantryByDishId = graphene.List(UserPantryType,dishId=graphene.Int(),userId=graphene.Int())
+
+    def resolve_displayuserPantry(self, info):
+        return UserPantry.objects.all()
+
+    def resolve_displayuserPantryById(self, info, id):
+        return UserPantry.objects.get(pk=id)
+
+    def resolve_displayuserPantryByDishId(self, info, dishId, userId):
+        return UserPantry.objects.filter(dishId=dishId, userId=userId)
+
+
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType)
 
@@ -371,6 +391,32 @@ class AddRecipeToRatedRecipe(graphene.Mutation):
         except Dish.DoesNotExist:
             raise GraphQLError(f"Dish with ID {dishId} does not exist.")
 
+class AddOrUpdateUserPantry(graphene.Mutation):
+    class Arguments:
+        userId = graphene.ID(required=True)
+        dishId = graphene.ID(required=True)
+        ingredientId = graphene.ID(required=True)
+
+    userPantry = graphene.Field(UserPantryType)
+
+    def mutate(self, info, userId, dishId, ingredientId):
+        userPantry = userPantry.objects.filter(
+            userId=userId,
+            dishId=dishId,
+            ingredientId=ingredientId
+        ).first()
+
+        if userPantry:
+            userPantry.save()
+        else:
+            userPantry = userPantry(
+                userId=userId,
+                dishId=dishId,
+                ingredientId=ingredientId
+            )
+            userPantry.save()
+
+        return AddOrUpdateUserPantry(userPantry=userPantry)
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
@@ -383,5 +429,7 @@ class Mutation(graphene.ObjectType):
     add_recipe_to_recently_viewed = AddRecipeToRecentlyViewed.Field()
 
     add_recipe_to_rated_recipe = AddRecipeToRatedRecipe.Field()
+
+    add_or_update_user_pantry = AddOrUpdateUserPantry.Field()
     
 schema = graphene.Schema(query=Query, mutation=Mutation)

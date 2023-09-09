@@ -222,3 +222,13 @@ class UserRecentlyViewed(models.Model):
 
     def __str__(self) -> str:
         return f"{self.userId} : {self.dishId}"
+    
+class UserPantry(models.Model):
+
+    userId = models.ForeignKey(User, on_delete=models.CASCADE)
+    dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
+    ingredientId = models.ForeignKey(DishIngredient, on_delete=models.CASCADE)
+    ingredientAddedTime = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.userId} : {self.dishId} - {self.ingredientId}"

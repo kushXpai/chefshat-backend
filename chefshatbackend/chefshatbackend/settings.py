@@ -28,10 +28,11 @@ SECRET_KEY = 'django-insecure-+9nvj8!uc9p#)^d&1=p4^u9=o*set_-zko9(s&et%g&2kv+xh7
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '172.20.10.2',
     '127.0.0.1',
     '192.168.0.199', # PP 5G
     '192.168.242.104', # Xiaomi 11i
-    '192.168.224.104' # Vedant Poco F1
+    '192.168.43.104' # Vedant Poco F1
     ]
 
 
