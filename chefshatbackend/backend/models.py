@@ -232,3 +232,16 @@ class UserPantry(models.Model):
 
     def __str__(self) -> str:
         return f"{self.userId} : {self.dishId} - {self.ingredientId}"
+
+class UserUpload(models.Model):
+
+    userId = models.ForeignKey(User, on_delete=models.CASCADE)
+    uploadLikes = models.IntegerField(default=0)
+    uploadImage = FileField(upload_to='userUploads/',default=defaultDishImage, null=True, blank=True)
+    uploadName = models.CharField(max_length = 100)
+    uploadDescription = models.CharField(max_length = 10000)
+    creationTime = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.id} : {self.userId}"
+

@@ -1,0 +1,6 @@
+cd chefshatbackend
+python3 manage.py runserver 192.168.242.104:8000
+
+cd chefshatbackend
+python3 manage.py makemigrations      
+python3 manage.py migrate       

@@ -1,7 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
 from graphql import GraphQLError
-from .models import User, Dish, Ingredient, DishIngredient, DishStep, UserSavedRecipe, UserRatedRecipe, UserTip, UserRecentlyViewed, UserPantry
+from .models import User, Dish, Ingredient, DishIngredient, DishStep, UserSavedRecipe, UserRatedRecipe, UserTip, UserRecentlyViewed, UserPantry, UserUpload
 import datetime
 
 class UserType(DjangoObjectType):
@@ -57,6 +57,11 @@ class UserPantryType(DjangoObjectType):
 class UserRecentlyViewedType(DjangoObjectType):
     class Meta:
         model = UserRecentlyViewed
+        fields = "__all__"
+
+class UserUploadType(DjangoObjectType):
+    class Meta:
+        model = UserUpload
         fields = "__all__"
 
 class Query(graphene.ObjectType):
@@ -246,6 +251,19 @@ class Query(graphene.ObjectType):
 
     def resolve_displayuserPantryByDishId(self, info, dishId, userId):
         return UserPantry.objects.filter(dishId=dishId, userId=userId)
+    
+    # User Uploads
+    displayUserUpload = graphene.List(UserUploadType)
+    displayUserUploadById = graphene.List(UserUploadType, userId=graphene.ID(required=True))
+
+    def resolve_displayUserUpload(self, info):
+        return UserUpload.objects.all().order_by('-creationTime')
+    
+    def resolve_displayUserUploadById(self, info, userId):
+        try:
+            return UserUpload.objects.filter(userId=userId).order_by('-creationTime')
+        except UserUpload.DoesNotExist:
+            raise GraphQLError(f"User with ID {userId} does not have any Uploads.")
 
 
 class CreateUser(graphene.Mutation):
@@ -417,6 +435,7 @@ class AddOrUpdateUserPantry(graphene.Mutation):
             userPantry.save()
 
         return AddOrUpdateUserPantry(userPantry=userPantry)
+
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
