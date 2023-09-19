@@ -33,7 +33,8 @@ ALLOWED_HOSTS = [
     '192.168.187.104', # Aniket Oppo F11 Pro
     '192.168.0.200', # PP 5G
     '192.168.251.104', # Xiaomi 11i
-    '192.168.43.104' # Vedant Poco F1
+    '192.168.43.104', # Vedant Poco F1
+    '192.168.1.20', # R Pune
     ]
 
 
