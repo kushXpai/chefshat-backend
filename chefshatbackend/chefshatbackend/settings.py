@@ -28,6 +28,8 @@ SECRET_KEY = 'django-insecure-+9nvj8!uc9p#)^d&1=p4^u9=o*set_-zko9(s&et%g&2kv+xh7
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '192.168.1.101', # Deepak Black Airtel
+    '192.168.1.19',
     '172.20.10.2', # Omkar
     '127.0.0.1',
     '192.168.187.104', # Aniket Oppo F11 Pro

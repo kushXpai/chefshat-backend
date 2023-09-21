@@ -284,7 +284,37 @@ class CreateUser(graphene.Mutation):
         user = User(username=username, sex=sex, mobileNumber=mobileNumber, emailAddress=emailAddress, dateOfBirth=dateOfBirth, address=address, profilePhoto=profilePhoto)
         user.save()
         return CreateUser(user=user)
-    
+
+class UpdateUserMutation(graphene.Mutation):
+    class Arguments:
+        user_id = graphene.Int(required=True)
+        username = graphene.String()
+        sex = graphene.String()
+        address = graphene.String()
+        emailAddress = graphene.String()
+        dateOfBirth = graphene.String()
+
+    user = graphene.Field(UserType)
+
+    @classmethod
+    def mutate(cls, root, info, user_id, username=None, sex=None, address=None, emailAddress=None, dateOfBirth=None):
+        user = User.objects.get(pk=user_id)
+        
+        if username is not None:
+            user.username = username
+        if sex is not None:
+            user.sex = sex
+        if address is not None:
+            user.address = address
+        if emailAddress is not None:
+            user.emailAddress = emailAddress
+        if dateOfBirth is not None:
+            user.dateOfBirth = dateOfBirth
+
+        user.save()
+
+        return UpdateUserMutation(user=user)
+        
 class IncreaseDishVisits(graphene.Mutation):
     dish = graphene.Field(DishType)
 
@@ -439,6 +469,7 @@ class AddOrUpdateUserPantry(graphene.Mutation):
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
+    update_user = UpdateUserMutation.Field()
 
     increase_dishVisits = IncreaseDishVisits.Field()
 
