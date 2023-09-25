@@ -34,8 +34,8 @@ ALLOWED_HOSTS = [
     '172.20.10.2', # Omkar Mac
     '127.0.0.1',
     '192.168.187.104', # Aniket Oppo F11 Pro Mac
-    '192.168.0.200', # PP 5G Mac
-    '192.168.251.104', # Xiaomi 11i Mac
+    '192.168.0.126', # PP 5G Mac
+    '192.168.143.104', # Xiaomi 11i Mac
     '192.168.43.104', # Vedant Poco F1 Mac
     '192.168.1.20', # R Pune Mac
     ]

@@ -292,12 +292,11 @@ class UpdateUserMutation(graphene.Mutation):
         sex = graphene.String()
         address = graphene.String()
         emailAddress = graphene.String()
-        dateOfBirth = graphene.String()
 
     user = graphene.Field(UserType)
 
     @classmethod
-    def mutate(cls, root, info, user_id, username=None, sex=None, address=None, emailAddress=None, dateOfBirth=None):
+    def mutate(cls, root, info, user_id, username=None, sex=None, address=None, emailAddress=None):
         user = User.objects.get(pk=user_id)
         
         if username is not None:
@@ -308,8 +307,6 @@ class UpdateUserMutation(graphene.Mutation):
             user.address = address
         if emailAddress is not None:
             user.emailAddress = emailAddress
-        if dateOfBirth is not None:
-            user.dateOfBirth = dateOfBirth
 
         user.save()
 

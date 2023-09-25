@@ -146,7 +146,7 @@ class Ingredient(models.Model):
     )
 
     ingredientName = models.CharField(max_length = 200)
-    ingredientImage = FileField(upload_to='ingredientImages/',default=defaultIngredientImage, null=True, blank=True)
+    # ingredientImage = FileField(upload_to='ingredientImages/',default=defaultIngredientImage, null=True, blank=True)
     ingredientCategory = models.CharField(max_length =50, choices = CATEGORY_CHOICES)
     ingredientPantryEssentials = models.BooleanField(default = False)
 
@@ -158,7 +158,7 @@ class DishIngredient(models.Model):
 
     dishId = models.ForeignKey(Dish, on_delete=models.CASCADE)
     ingredientId = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    dishIngredientQuantity = models.IntegerField()
+    dishIngredientQuantity = models.DecimalField(max_digits=7, decimal_places=2)
     dishIngredientQuantityUnit = models.CharField(max_length = 200, null=True)  
 
     def __str__(self) -> str:
