@@ -69,6 +69,12 @@ class Query(graphene.ObjectType):
     displayUser = graphene.List(UserType)
     displayUserById = graphene.Field(UserType, id=graphene.ID(required=True))
     displayUserByMobileNumber = graphene.Field(UserType, mobileNumber=graphene.String(required=True))
+    count_users_by_mobile_and_password = graphene.Int( mobile_number=graphene.String(required=True),password=graphene.String(required=True))
+    get_user_id_by_mobile_and_password = graphene.Int(
+        mobile_number=graphene.String(required=True),
+        password=graphene.String(required=True)
+    )
+    displayUserByMobileNumberAndPassword = graphene.Field(UserType, mobileNumber=graphene.String(required=True), password=graphene.String(required=True))
 
     def resolve_displayUser(self, info):
         return User.objects.all()
@@ -85,6 +91,17 @@ class Query(graphene.ObjectType):
         except User.DoesNotExist:
             return None
 
+    def resolve_count_users_by_mobile_and_password(self, info, mobile_number, password):
+        user_count = User.objects.filter(mobileNumber=mobile_number, password=password).count()
+        return user_count
+    
+    def resolve_displayUserByMobileNumberAndPassword(self, info, mobileNumber, password):
+        try:
+            return User.objects.get(mobileNumber=mobileNumber, password=password)
+        except User.DoesNotExist:
+            return None
+    
+    
     # DISH 
     displayDish = graphene.List(DishType)
     displayDishById = graphene.Field(DishType, id=graphene.ID(required=True))

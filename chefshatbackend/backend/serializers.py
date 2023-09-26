@@ -6,12 +6,9 @@ class UserSerializers(serializers.ModelSerializer):
         model = User
         fields = [
             'username',
+            'password',
             'profilePhoto',
-            'sex',
             'mobileNumber',
-            'emailAddress',
-            'dateOfBirth',
-            'address',
             'followers',
             'followings',
             'creationTime'

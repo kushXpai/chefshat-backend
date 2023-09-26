@@ -5,10 +5,7 @@ class FileField(models.FileField):
         return obj.file.url
 
 def defaultProfile():
-    if User.sex == 'MALE':
-        return 'https://i.pinimg.com/originals/ba/be/1f/babe1f8eddf93fbcb3d1802bc1b65fe4.png'
-    elif User.sex == 'FEMALE':
-        return 'https://i.pinimg.com/originals/be/84/e8/be84e8c7ce61aaec1426b217d2b0ed3b.png'
+    return 'https://i.pinimg.com/originals/ba/be/1f/babe1f8eddf93fbcb3d1802bc1b65fe4.png'
     
 def defaultDishImage():
     return 'https://www.istockphoto.com/vector/hand-drawn-vector-seamless-pattern-with-sketch-dairy-products-on-a-blackboard-gm1224636004-360176253?phrase=black%20and%20white%20dish'
@@ -17,18 +14,11 @@ def defaultIngredientImage():
     return 'ingredientImages/default.png'
     
 class User(models.Model):
-    SEX_CHOICES = (
-        ("MALE", "MALE"),
-        ("FEMALE", "FEMALE"),
-    )
 
     username = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
     profilePhoto = FileField(upload_to='userProfilePhotos/',default=defaultProfile, null=True, blank=True)
-    sex = models.CharField(max_length=10, choices=SEX_CHOICES)
-    mobileNumber = models.CharField(max_length=10)
-    emailAddress = models.EmailField(max_length=100)
-    dateOfBirth = models.DateField()
-    address = models.TextField(max_length=1000)
+    mobileNumber = models.CharField(max_length=10, unique=True)
     followers = models.IntegerField(default=0)
     followings = models.IntegerField(default=0)
     creationTime = models.DateTimeField(auto_now=True)
