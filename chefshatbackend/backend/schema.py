@@ -288,17 +288,14 @@ class CreateUser(graphene.Mutation):
 
     class Arguments:
         username = graphene.String(required=True)
-        sex = graphene.String(required=True)
+        password = graphene.String(required=True)
         mobileNumber = graphene.String(required=True)
-        emailAddress = graphene.String(required=True)
-        dateOfBirth = graphene.String(required=True)
-        address = graphene.String(required=True)
         profilePhoto = graphene.String(required=True)
 
-    def mutate(self, info, username, sex, mobileNumber, emailAddress, dateOfBirth, address, profilePhoto):
+    def mutate(self, info, username, password, mobileNumber, profilePhoto):
         from datetime import datetime
         dateOfBirth = datetime.strptime(dateOfBirth, '%Y-%m-%d').date()
-        user = User(username=username, sex=sex, mobileNumber=mobileNumber, emailAddress=emailAddress, dateOfBirth=dateOfBirth, address=address, profilePhoto=profilePhoto)
+        user = User(username=username, password=password, mobileNumber=mobileNumber, profilePhoto=profilePhoto)
         user.save()
         return CreateUser(user=user)
 
