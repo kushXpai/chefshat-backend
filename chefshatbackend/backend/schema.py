@@ -1,8 +1,10 @@
 import graphene
+from graphene import List, Int
 from graphene_django import DjangoObjectType
 from graphql import GraphQLError
 from .models import User, Dish, Ingredient, DishIngredient, DishStep, UserSavedRecipe, UserRatedRecipe, UserTip, UserRecentlyViewed, UserPantry, UserUpload
 import datetime
+from django.db.models import Count
 
 class UserType(DjangoObjectType):
     class Meta:
@@ -30,6 +32,11 @@ class DishType(DjangoObjectType):
         fields = "__all__"
 
     ingredients = graphene.List(DishIngredientType, dishId=graphene.ID(required=True))
+
+    savedCount = graphene.Int()  # Add this field
+
+    def resolve_savedCount(self, info):
+        return self.usersavedrecipe_set.count()
 
     def resolve_ingredients(self, info, dishId):
         return DishIngredient.objects.filter(dishId=dishId)
@@ -63,6 +70,18 @@ class UserUploadType(DjangoObjectType):
     class Meta:
         model = UserUpload
         fields = "__all__"
+
+
+
+
+
+class SavedRecipeCountType(graphene.ObjectType):
+    recipe_name = graphene.String()
+    count = graphene.Int()
+
+
+
+
 
 class Query(graphene.ObjectType):
     # USER
@@ -101,7 +120,10 @@ class Query(graphene.ObjectType):
         except User.DoesNotExist:
             return None
     
-    
+
+
+
+
     # DISH 
     displayDish = graphene.List(DishType)
     displayDishById = graphene.Field(DishType, id=graphene.ID(required=True))
@@ -139,6 +161,10 @@ class Query(graphene.ObjectType):
     def resolve_displayDishesTrending(self, info):
         return Dish.objects.all().order_by('-dishVisits')
     
+
+
+
+
     # INGREDIENT
     displayIngredient = graphene.List(IngredientType)
     displayIngredientById = graphene.Field(IngredientType, id=graphene.ID(required=True))
@@ -159,6 +185,10 @@ class Query(graphene.ObjectType):
         except Ingredient.DoesNotExist:
             return None
         
+
+
+
+
     # DISH INGREDIENT
     displayDishIngredient = graphene.List(DishIngredientType)
     displayDishIngredientById = graphene.Field(DishIngredientType, dishId=graphene.ID(required=True))
@@ -171,7 +201,11 @@ class Query(graphene.ObjectType):
             return DishIngredient.objects.filter(dishId=dishId)
         except DishIngredient.DoesNotExist:
             raise GraphQLError(f"Dish with ID {dishId} does not exist.")
-        
+
+
+
+
+
     # DISH STEP
     displayDishStep = graphene.List(DishStepType)
     displayDishStepById = graphene.List(DishStepType, dishId=graphene.ID(required=True))
@@ -185,6 +219,9 @@ class Query(graphene.ObjectType):
         except DishStep.DoesNotExist:
             raise GraphQLError(f"Dish with ID {dishId} does not exist.")
 
+
+
+
         
     # SAVED RECIPES
     displayUserSavedRecipe = graphene.List(UserSavedRecipeType)
@@ -192,7 +229,7 @@ class Query(graphene.ObjectType):
     displayUserSavedRecipeByCourse = graphene.List(UserSavedRecipeType, userId=graphene.ID(required=True), userSavedRecipeCategory=graphene.String(required=True))
 
     def resolve_displayUserSavedRecipe(self, info):
-        return UserSavedRecipe.objects.all()
+        return UserSavedRecipe.objects.all().order_by('-recipeSaved')
     
     def resolve_displayUserSavedRecipeById(self, info, userId):
         try:
@@ -202,10 +239,50 @@ class Query(graphene.ObjectType):
         
     def resolve_displayUserSavedRecipeByCourse(self, info, userId, userSavedRecipeCategory):
         try:
-            return UserSavedRecipe.objects.filter(userSavedRecipeCategory=userSavedRecipeCategory).order_by('-recipeSaved')
+            return UserSavedRecipe.objects.filter(userId=userId, userSavedRecipeCategory=userSavedRecipeCategory).order_by('-recipeSaved')
         except UserSavedRecipe.DoesNotExist:
             raise GraphQLError(f"User with {userSavedRecipeCategory} does not have any saved recipes.")
-        
+
+
+    displayNonVegetarianSavedRecipes = graphene.List(UserSavedRecipeType)
+    displayVegetarianSavedRecipes = graphene.List(UserSavedRecipeType)
+
+    def resolve_displayNonVegetarianSavedRecipes(self, info):
+        non_vegetarian_dishes = Dish.objects.filter(dishCategoryDietary="nonvegetarian")
+        non_vegetarian_saved_recipes = UserSavedRecipe.objects.filter(dishId__in=non_vegetarian_dishes).order_by('-recipeSaved')
+        return non_vegetarian_saved_recipes
+
+    def resolve_displayVegetarianSavedRecipes(self, info):
+        vegetarian_dishes = Dish.objects.filter(dishCategoryDietary="vegetarian")
+        vegetarian_saved_recipes = UserSavedRecipe.objects.filter(dishId__in=vegetarian_dishes).order_by('-recipeSaved')
+        return vegetarian_saved_recipes
+    
+
+    allDishesWithSavedCounts = graphene.List(DishType)
+    allVegetarianDishes = graphene.List(DishType)
+    allNonVegetarianDishes = graphene.List(DishType)
+    
+    def resolve_allDishesWithSavedCounts(self, info):
+        dishes = Dish.objects.annotate(savedCount=Count('usersavedrecipe'))
+        dishes = sorted(dishes, key=lambda dish: dish.savedCount, reverse=True)      
+        return dishes
+
+    def resolve_allVegetarianDishes(self, info):
+        vegetarian_dishes = Dish.objects.filter(dishCategoryDietary="vegetarian")
+        vegetarian_dishes = vegetarian_dishes.annotate(savedCount=Count('usersavedrecipe'))
+        vegetarian_dishes = sorted(vegetarian_dishes, key=lambda dish: dish.savedCount, reverse=True)
+        return vegetarian_dishes
+
+    def resolve_allNonVegetarianDishes(self, info):
+        non_vegetarian_dishes = Dish.objects.filter(dishCategoryDietary="nonvegetarian")
+        non_vegetarian_dishes = non_vegetarian_dishes.annotate(savedCount=Count('usersavedrecipe'))
+        non_vegetarian_dishes = sorted(non_vegetarian_dishes, key=lambda dish: dish.savedCount, reverse=True)
+        return non_vegetarian_dishes
+
+
+
+
+
     
     # RATED RECIPES
     displayUserRatedRecipe = graphene.List(UserRatedRecipeType)
@@ -220,6 +297,10 @@ class Query(graphene.ObjectType):
         except UserRatedRecipe.DoesNotExist:
             raise GraphQLError(f"User with ID {userId} does not have any rated recipes.")
 
+
+
+
+
     # TIPS 
     displayUserTip = graphene.List(UserTipType)
     displayUserTipById = graphene.List(UserTipType, userId=graphene.ID(required=True))
@@ -233,6 +314,9 @@ class Query(graphene.ObjectType):
         except UserTip.DoesNotExist:
             raise GraphQLError(f"User with ID {userId} does not have any tip recipes.")
     
+
+
+
     # Recipe Searching
     searchDishesByIngredients = graphene.List(DishType, ingredients=graphene.List(graphene.String))
 
@@ -246,6 +330,9 @@ class Query(graphene.ObjectType):
 
         return dishes
   
+
+
+
     # Recently Viewed
     displayUserRecentlyViewed = graphene.List(UserRecentlyViewedType, userId=graphene.ID(required=True))
 
@@ -255,6 +342,9 @@ class Query(graphene.ObjectType):
         except UserRecentlyViewed.DoesNotExist:
             raise GraphQLError(f"User with ID {userId} haven't seen any recipes.")
         
+
+
+
     # Pantry
     displayuserPantry = graphene.List(UserPantryType)
     displayuserPantryById = graphene.Field(UserPantryType, id=graphene.Int())
@@ -269,6 +359,9 @@ class Query(graphene.ObjectType):
     def resolve_displayuserPantryByDishId(self, info, dishId, userId):
         return UserPantry.objects.filter(dishId=dishId, userId=userId)
     
+
+
+
     # User Uploads
     displayUserUpload = graphene.List(UserUploadType)
     displayUserUploadById = graphene.List(UserUploadType, userId=graphene.ID(required=True))
@@ -281,6 +374,9 @@ class Query(graphene.ObjectType):
             return UserUpload.objects.filter(userId=userId).order_by('-creationTime')
         except UserUpload.DoesNotExist:
             raise GraphQLError(f"User with ID {userId} does not have any Uploads.")
+
+
+
 
 
 class CreateUser(graphene.Mutation):

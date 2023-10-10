@@ -38,6 +38,7 @@ ALLOWED_HOSTS = [
     '192.168.143.104', # Xiaomi 11i Mac
     '192.168.43.104', # Vedant Poco F1 Mac
     '192.168.1.20', # R Pune Mac
+    '172.20.10.2' # iPhone 15 Mac
     ]
 
 
