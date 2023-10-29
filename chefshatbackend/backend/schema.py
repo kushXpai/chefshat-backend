@@ -120,7 +120,55 @@ class Query(graphene.ObjectType):
         except User.DoesNotExist:
             return None
     
+    # activeUsers = graphene.List(UserType)
 
+    # def resolve_activeUsers(self, info):
+    #     # Calculate the activity score for each user
+    #     users = User.objects.annotate(
+    #         saved_recipe_count=Count('usersavedrecipe'),
+    #         rated_recipe_count=Count('userratedrecipe'),
+    #         upload_count=Count('userupload')
+    #     )
+
+    #     # Calculate the total activity score as the sum of saved recipes, rated recipes, and uploads
+    #     users = users.annotate(
+    #         total_activity_score=(
+    #             users.saved_recipe_count +
+    #             users.rated_recipe_count +
+    #             users.upload_count
+    #         )
+    #     )
+
+    #     # Sort users by their total activity score in descending order
+    #     users = users.order_by('-total_activity_score')
+
+    #     return users
+
+    all_users_with_activity = graphene.List(UserType)
+
+    def resolve_all_users_with_activity(self, info):
+        # Implement your logic to calculate activity scores and sort users here
+        # You'll need to query your database to retrieve user data and calculate scores
+        users = User.objects.all()  # Replace with your actual query
+
+        # Define a function to calculate the activity score for a user
+        def calculate_activity_score(user):
+            saved_recipe_count = user.usersavedrecipe_set.count()
+            rated_recipe_count = user.userratedrecipe_set.count()
+            upload_count = user.userupload_set.count()
+            
+            activity_score = saved_recipe_count + rated_recipe_count + upload_count
+            
+            return activity_score
+
+        # Calculate activity scores for each user
+        for user in users:
+            user.activity_score = calculate_activity_score(user)
+
+        # Sort users by their activity score in descending order
+        sorted_users = sorted(users, key=lambda user: user.activity_score, reverse=True)
+
+        return sorted_users
 
 
 
