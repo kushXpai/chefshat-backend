@@ -126,7 +126,7 @@ class Ingredient(models.Model):
         ("BREADS", "BREADS"),
         ("OILSNFATS", "OILS N FATS"),
         ("DRESSINGSNVINEGARS", "DRESSINGS N VINEGARS"),
-        ("CONDIMENTS", "CONDIMENTS"), #
+        ("CONDIMENTS", "CONDIMENTS"),
         ("CANNED", "CANNED FOODS"),
         ("SAUCESNSPREADSNDIPS", "SAUCES, SPREADS N DIPS"),
         ("STEWSNSTOCKS", "STEWS N STOCKS"),
@@ -142,7 +142,7 @@ class Ingredient(models.Model):
 
 
     def __str__(self) -> str:
-        return self.ingredientName
+        return f"{self.id} : {self.ingredientName}"
     
 class DishIngredient(models.Model):
 

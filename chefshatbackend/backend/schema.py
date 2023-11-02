@@ -1,7 +1,9 @@
+from collections import defaultdict
 import graphene
-from graphene import List, Int
+from graphene import List, Int, ObjectType
 from graphene_django import DjangoObjectType
 from graphql import GraphQLError
+from .enum import IngredientCategoryEnum
 from .models import User, Dish, Ingredient, DishIngredient, DishStep, UserSavedRecipe, UserRatedRecipe, UserTip, UserRecentlyViewed, UserPantry, UserUpload
 import datetime
 from django.db.models import Count
@@ -15,6 +17,11 @@ class IngredientType(DjangoObjectType):
     class Meta:
         model = Ingredient
         fields = "__all__"
+
+# class IngredientCategoryType(ObjectType):
+#     category = IngredientCategoryEnum()
+#     ingredients = List(IngredientType)
+#     total_count = Int()
 
 class DishIngredientType(DjangoObjectType):
     class Meta:
@@ -181,7 +188,7 @@ class Query(graphene.ObjectType):
     displayDishesTrending = graphene.List(DishType)
 
     def resolve_displayDish(self, info):
-        return Dish.objects.all()
+        return Dish.objects.all().order_by("-dishLastUpdate")
     
     def resolve_displayDishById(self, info, id):
         try:
@@ -232,6 +239,72 @@ class Query(graphene.ObjectType):
             return Ingredient.objects.filter(ingredientCategory=ingredientCategory)
         except Ingredient.DoesNotExist:
             return None
+        
+    # allIngredientsInDishes = graphene.List(IngredientType)
+
+    # def resolve_allIngredientsInDishes(self, info):
+    #     unique_ingredients = set()  # Use a set to keep track of unique ingredients
+    #     all_ingredients = []
+
+    #     # Iterate through all dishes and fetch their ingredients
+    #     dishes = Dish.objects.all()
+    #     for dish in dishes:
+    #         ingredients = DishIngredient.objects.filter(dishId=dish.id)
+
+    #         for ingredient in ingredients:
+    #             if ingredient.ingredientId not in unique_ingredients:
+    #                 unique_ingredients.add(ingredient.ingredientId)
+    #                 all_ingredients.append(Ingredient.objects.get(id=ingredient.ingredientId))
+
+    #     return all_ingredients
+
+    all_unique_ingredients = List(IngredientType)
+
+    def resolve_all_unique_ingredients(self, info):
+        # Fetch all DishIngredient objects
+        dish_ingredients = DishIngredient.objects.all()
+
+        # Create a dictionary to store unique ingredients
+        unique_ingredients = defaultdict(set)
+
+        # Loop through the DishIngredient objects and add each ingredient to the set
+        for dish_ingredient in dish_ingredients:
+            unique_ingredients[dish_ingredient.ingredientId.id].add(dish_ingredient.ingredientId)
+
+        # Flatten the sets of ingredients into a list
+        result = [ingredient for ingredient_set in unique_ingredients.values() for ingredient in ingredient_set]
+
+        return result
+    
+    # all_unique_ingredients_by_category = List(IngredientCategoryType)
+
+    # def resolve_all_unique_ingredients_by_category(self, info):
+    #     # Fetch all DishIngredient objects
+    #     dish_ingredients = DishIngredient.objects.all()
+
+    #     # Create a dictionary to store unique ingredients by category
+    #     unique_ingredients_by_category = defaultdict(lambda: {
+    #         'ingredients': set(),
+    #         'total_count': 0,
+    #     })
+
+    #     # Loop through the DishIngredient objects and add each ingredient to the set and increment the count
+    #     for dish_ingredient in dish_ingredients:
+    #         category = dish_ingredient.ingredientId.ingredientCategory
+    #         unique_ingredients_by_category[category]['ingredients'].add(dish_ingredient.ingredientId)
+    #         unique_ingredients_by_category[category]['total_count'] += 1
+
+    #     # Convert the dictionary into a list of IngredientCategoryType objects
+    #     result = [
+    #         IngredientCategoryType(
+    #             category=category,
+    #             ingredients=list(ingredients_set['ingredients']),
+    #             total_count=ingredients_set['total_count']
+    #         )
+    #         for category, ingredients_set in unique_ingredients_by_category.items()
+    #     ]
+
+    #     return result
         
 
 
